@@ -1,0 +1,19 @@
+# Simulation outputs
+sim/*.vcd
+sim/*.log
+
+# Vivado generated files
+synth/*.jou
+synth/*.log
+synth/.Xil/
+*.xpr
+*.xsa
+*.bit
+
+# OS
+Thumbs.db
+
+vivado_proj/
+
+docs/assembled_memory.v
+docs/assembled_memory.hex
