@@ -110,14 +110,14 @@ No additional logic needed — the wire alias makes the intent self-documenting.
     );
 
     if_ex_reg PIPE (
-        .clk            (clk),
-        .reset          (reset),
-        .flush          (flush),
-        .halt           (halt),
+        .clk(clk),
+        .reset(reset),
+        .flush(flush),
+        .halt(halt),
         .if_instruction (if_instruction),
-        .if_pc          (pc),
+        .if_pc(pc),
         .ex_instruction (ex_instruction),
-        .ex_pc          (ex_pc)
+        .ex_pc(ex_pc)
     );
 ```
 
@@ -131,9 +131,9 @@ No additional logic needed — the wire alias makes the intent self-documenting.
 
 ```verilog
     register_file RF (
-        .clk     (clk),
-        .en      (reg_write | mem_read),
-        .addr    (ex_instruction[3:0]),
+        .clk(clk),
+        .en(reg_write | mem_read),
+        .addr(ex_instruction[3:0]),
         .data_in (mem_read ? dmem_data : acc),
         .data_out(reg_data)
     );
@@ -238,17 +238,17 @@ MOV ACC, Rn needs special handling because it asserts `alu_enable` but the resul
 ### Output Assignments
 
 ```verilog
-    assign acc_out        = acc;
-    assign ir_out         = ex_instruction;
+    assign acc_out = acc;
+    assign ir_out = ex_instruction;
     assign alu_enable_out = alu_enable;
     assign reg_write_out  = reg_write;
     assign alu_opcode_out = alu_opcode;
     assign instruction_out= if_instruction;
-    assign result_out     = result;
-    assign ext_out        = ext;
-    assign reg_data_out   = reg_data;
-    assign cb_out         = cb;
-    assign mem_data_out   = dmem_data;
+    assign result_out = result;
+    assign ext_out = ext;
+    assign reg_data_out = reg_data;
+    assign cb_out = cb;
+    assign mem_data_out = dmem_data;
     assign cycle_count_out  = cycle_count;
     assign instr_count_out  = instr_count;
     assign branch_count_out = branch_count;
@@ -262,10 +262,10 @@ MOV ACC, Rn needs special handling because it asserts `alu_enable` but the resul
 
 ```verilog
 module if_ex_reg (
-    input        clk,
-    input        reset,
-    input        flush,
-    input        halt,
+    input clk,
+    input reset,
+    input flush,
+    input halt,
     input  [7:0] if_instruction,
     input  [3:0] if_pc,
     output reg [7:0] ex_instruction,
@@ -274,10 +274,10 @@ module if_ex_reg (
     always @(posedge clk or posedge reset) begin
         if (reset || flush) begin
             ex_instruction <= 8'b00000000; // NOP
-            ex_pc          <= 4'b0000;
+            ex_pc <= 4'b0000;
         end else if (!halt) begin
             ex_instruction <= if_instruction;
-            ex_pc          <= if_pc;
+            ex_pc <= if_pc;
         end
     end
 endmodule
@@ -301,22 +301,22 @@ endmodule
 ```verilog
 module instruction_decoder (
     input  [7:0] opcode,
-    output reg   alu_enable,
-    output reg   reg_write,
-    output reg   branch_enable,
-    output reg   halt,
-    output reg   mem_read,
-    output reg   mem_write,
+    output reg alu_enable,
+    output reg reg_write,
+    output reg branch_enable,
+    output reg halt,
+    output reg mem_read,
+    output reg mem_write,
     output reg [7:0] alu_opcode
 );
     always @(*) begin
-        alu_enable   = 0;
-        reg_write    = 0;
+        alu_enable = 0;
+        reg_write = 0;
         branch_enable= 0;
-        halt         = 0;
-        mem_read     = 0;
-        mem_write    = 0;
-        alu_opcode   = 8'b0;
+        halt = 0;
+        mem_read = 0;
+        mem_write = 0;
+        alu_opcode = 8'b0;
 
         casex (opcode)
             8'b0000xxxx: begin alu_enable = 1; alu_opcode = opcode; end
@@ -471,22 +471,22 @@ endmodule
 
 ```verilog
 module program_counter (
-    input        clk,
-    input        reset,
-    input  [3:0] start_address,
-    input        branch_enable,
-    input        halt,
-    input  [3:0] branch_address,
+    input clk,
+    input reset,
+    input [3:0] start_address,
+    input branch_enable,
+    input halt,
+    input [3:0] branch_address,
     output reg [3:0] pc
 );
     reg first_cycle;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            pc          <= 4'b0000;
+            pc <= 4'b0000;
             first_cycle <= 1'b1;
         end else if (first_cycle) begin
-            pc          <= start_address;
+            pc <= start_address;
             first_cycle <= 1'b0;
         end else if (halt) begin
             pc <= pc;
@@ -499,7 +499,7 @@ module program_counter (
 endmodule
 ```
 
-**The `first_cycle` trick resolves a synthesis warning.** The original design did `pc <= start_address` on reset, which means the reset net was driving a load (set) operation — Vivado sees both a reset and a set from the same signal, which is ambiguous in hardware. The fix: reset always clears to 0 (pure asynchronous reset), and `start_address` is loaded on the first active clock cycle using a separate `first_cycle` flag. This gives the same behavior but with clean synthesis semantics.
+// **The `first_cycle` trick resolves a synthesis warning.** The original design did `pc <= start_address` on reset, which means the reset net was driving a load (set) operation — Vivado sees both a reset and a set from the same signal, which is ambiguous in hardware. The fix: reset always clears to 0 (pure asynchronous reset), and `start_address` is loaded on the first active clock cycle using a separate `first_cycle` flag. This gives the same behavior but with clean synthesis semantics.
 
 **Priority order of the if-else chain:**
 1. `reset` — asynchronous, overrides everything
@@ -518,8 +518,8 @@ endmodule
 
 ```verilog
 module data_memory (
-    input        clk,
-    input        we,
+    input clk,
+    input we,
     input  [3:0] addr,
     input  [7:0] data_in,
     output [7:0] data_out
@@ -565,16 +565,16 @@ module instruction_memory (
 
     // Auto-generated by assembler.py
     initial begin
-        memory[ 0] = 8'b00000000; // 0x00  NOP
-        memory[ 1] = 8'b00000000; // 0x00  NOP
-        memory[ 2] = 8'b00000000; // 0x00  NOP
-        memory[ 3] = 8'b00000000; // 0x00  NOP
-        memory[ 4] = 8'b10010001; // 0x91  MOV ACC, R1
-        memory[ 5] = 8'b11101111; // 0xef  STORE [15], ACC
-        memory[ 6] = 8'b00000000; // 0x00  NOP (hazard buffer)
-        memory[ 7] = 8'b10010011; // 0x93  MOV ACC, R3
-        memory[ 8] = 8'b11011111; // 0xdf  LOAD [15]
-        memory[ 9] = 8'b00010010; // 0x12  ADD R2
+        memory[0] = 8'b00000000; // 0x00  NOP
+        memory[1] = 8'b00000000; // 0x00  NOP
+        memory[2] = 8'b00000000; // 0x00  NOP
+        memory[3] = 8'b00000000; // 0x00  NOP
+        memory[4] = 8'b10010001; // 0x91  MOV ACC, R1
+        memory[5] = 8'b11101111; // 0xef  STORE [15], ACC
+        memory[6] = 8'b00000000; // 0x00  NOP (hazard buffer)
+        memory[7] = 8'b10010011; // 0x93  MOV ACC, R3
+        memory[8] = 8'b11011111; // 0xdf  LOAD [15]
+        memory[9] = 8'b00010010; // 0x12  ADD R2
         memory[10] = 8'b11001101; // 0xcd  BRANCH 13
         memory[11] = 8'b01100001; // 0x61  XOR R1 (skipped)
         memory[12] = 8'b11111111; // 0xff  HLT (skipped)
@@ -618,8 +618,8 @@ endmodule
 
 ```verilog
     tiny_processor uut (
-        .clk             (clk),
-        .reset           (reset),
+        .clk (clk),
+        .reset (reset),
         .start_address   (4'b0000),
         ...
         .cycle_count_out (cycle_count_out),
@@ -647,9 +647,9 @@ endmodule
 
 ```verilog
     task check;
-        input [63:0]     test_num;
-        input [7:0]      expected;
-        input [7:0]      actual;
+        input [63:0] test_num;
+        input [7:0] expected;
+        input [7:0] actual;
         input [8*32-1:0] label;
         begin
             if (actual === expected) begin
